@@ -121,6 +121,10 @@ func (this *User) CanWrite(t *Team) bool {
 	return slice.ContainsInt64(uids, this.Id)
 }
 
+func (this *User) IsRoot() bool {
+    return this.Role == ROOT_ADMIN_ROLE
+}
+
 func Users() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(new(User))
 }

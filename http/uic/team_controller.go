@@ -59,6 +59,7 @@ func (this *TeamController) Teams() {
         t["Resume"] = v.Resume
         t["CreatorCnname"] = cu.Cnname
         t["CreatorName"] = cu.Name
+        t["IsAdmin"] = (v.IsAdmin(me.Id) || me.Role == ROOT_ADMIN_ROLE )
         nteams = append(nteams,t)
     }
 
@@ -104,7 +105,18 @@ func (this *TeamController) CreateTeamPost() {
 		return
 	}
 
+    if ! me.IsRoot() {
+		this.ServeErrJson("you are not root!")
+		return
+    }
+
 	uids := strings.TrimSpace(this.GetString("users", ""))
+	if utils.HasDangerousCharacters(uids) {
+		this.ServeErrJson("uids is invalid")
+		return
+	}
+
+    adminUids := strings.TrimSpace(this.GetString("admins",""))
 	if utils.HasDangerousCharacters(uids) {
 		this.ServeErrJson("uids is invalid")
 		return
@@ -113,9 +125,10 @@ func (this *TeamController) CreateTeamPost() {
 	err = PutUsersInTeam(lastId, uids)
 	if err != nil {
 		this.ServeErrJson("occur error " + err.Error())
-	} else {
-		this.ServeOKJson()
-	}
+	} 
+
+    uaerr := PutAdminInTeam(lastId, adminUids)
+    this.AutoServeError(uaerr)
 }
 
 func (this *TeamController) Users() {
@@ -150,6 +163,13 @@ func (this *TeamController) Admins() {
 func (this *TeamController) DeleteTeam() {
 	me := this.Ctx.Input.GetData("CurrentUser").(*User)
 	targetTeam := this.Ctx.Input.GetData("TargetTeam").(*Team)
+
+    uid := me.Id
+    if ! targetTeam.IsAdmin(uid) && me.Role != ROOT_ADMIN_ROLE {
+        this.ServeErrJson("you are not admin")    
+        return
+    }
+
 	if !me.CanWrite(targetTeam) {
 		this.ServeErrJson("no privilege")
 		return
@@ -173,6 +193,10 @@ func (this *TeamController) EditGet() {
         this.Data["TeamCreator"] = "<Null>" 
     }
 	this.Data["TargetTeam"] = targetTeam
+
+    loginUser := this.Ctx.Input.GetData("CurrentUser").(*User)
+    uid := loginUser.Id
+    this.Data["IsAdmin"] = (targetTeam.IsAdmin(uid) || loginUser.Role == ROOT_ADMIN_ROLE )
 	this.TplName = "team/edit.html"
 }
 
@@ -186,6 +210,13 @@ func (this *TeamController) EditPost() {
 		this.ServeErrJson("parameter resume or users or admins is invalid")
 		return
 	}
+
+    loginUser := this.Ctx.Input.GetData("CurrentUser").(*User)
+    uid := loginUser.Id
+    if ! targetTeam.IsAdmin(uid) && loginUser.Role != ROOT_ADMIN_ROLE {
+        this.ServeErrJson("you are not admin")    
+        return
+    }
 
 	if targetTeam.Resume != resume {
 		targetTeam.Resume = resume

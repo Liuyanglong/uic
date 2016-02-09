@@ -31,11 +31,12 @@ $(function() {
 						<span class="glyphicon glyphicon-search"></span>
 						Search
 					</button>
-					
+					{{if .IamRoot}}
 					<a href="/me/team/c" class="btn btn-default pull-right">
 						<span class="glyphicon glyphicon-plus"></span>
 						Add
 					</a>
+                    {{end}}
 				</div>
 
 				<div class="ts">
@@ -54,9 +55,11 @@ $(function() {
 								<span class="glyphicon glyphicon-edit"></span>
 							</a>
 							<span class="cut-line">¦</span>
+                            {{if .IsAdmin}}
 							<a href="javascript:delete_team('{{.Id}}');" class="orange" style="text-decoration:none;">
 								<span class="glyphicon glyphicon-trash"></span>
 							</a>
+                            {{end}}
 						</div>
 						<div class="mt10">
 							{{range member .Id}}

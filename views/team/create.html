@@ -23,6 +23,11 @@
 							<label for="name">名称（a-zA-Z0-9_-.）：</label> <input type="text"
 							id="name" class="form-control" />
 						</div>
+                        <div class="form-group">
+							<label for="teamadmins">Team管理员：</label> <input
+							type="text" id="teamadmins" class="form-control" />
+						</div>
+
 						<div class="form-group">
 							<label for="resume">简介（方便以后能想起这个组的作用，选填）：</label> <input
 							type="text" id="resume" class="form-control" />
@@ -74,6 +79,38 @@ $(function() {
         formatSelection: function(obj) {return obj.name},
     });
 });
+
+$(function() {
+	$("#teamadmins").select2({
+        placeholder: "输入要添加Admin的name",
+        allowClear: true,
+        multiple: true,
+        quietMillis: 100,
+        minimumInputLength: 0,
+        id: function(obj){return obj.id;},
+        initSelection: function(element, callback) {
+        	$.getJSON("/team/admins?name={{.TargetTeam.Name}}", function(json) {
+        		callback(json.users);
+        	});
+        },
+        ajax: {
+            url: "/user/query",
+            dataType: 'json',
+            data: function(term, page) {
+                return {
+                    query: term,
+                    limit: 20
+                };
+            },
+            results: function(json, page) {
+                return {results: json.users};
+            }
+        },
+        formatResult: function(obj) {return obj.name + "["+obj.cnname+"]" + "["+obj.email+"]"},
+        formatSelection: function(obj) {return obj.name},
+    });
+});
+
 </script>
 
 {{template "layout/foot.html" .}}

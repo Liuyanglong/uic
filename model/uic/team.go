@@ -411,6 +411,19 @@ func (this *Team) AdminUserIds() string {
 	return strings.Join(arr, ",")
 }
 
+func (this *Team) IsAdmin(uid int64) bool {
+    adminUids := this.AdminUserIds()    
+	uidArr := strings.Split(adminUids, ",")
+    for _,v := range uidArr {
+        uInt ,_ := strconv.ParseInt(v, 10, 64)  
+        if uInt == uid {
+            return true    
+        }
+    }
+    
+    return false
+}
+
 func (this *Team) Update() (int64, error) {
 	num, err := orm.NewOrm().Update(this)
 

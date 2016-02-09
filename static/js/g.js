@@ -169,6 +169,7 @@ function create_team() {
 	$.post('/me/team/c', {
 		'name' : $("#name").val(),
 		'resume' : $("#resume").val(),
+		'admins' : $("#teamadmins").val(),
 		'users' : $("#users").val()
 	}, function(json) {
 		if (json.msg.length > 0) {
